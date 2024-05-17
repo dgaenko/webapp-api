@@ -1,0 +1,10 @@
+{
+  "apps" : [
+    {
+      "name"       : "nightmess.app",
+      "script"     : "npm",
+      "interpreter": "none",
+      "args"       : "run start"
+    }
+  ]
+}

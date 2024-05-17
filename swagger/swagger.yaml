@@ -1,0 +1,485 @@
+openapi: 3.0.0
+info:
+  title: Nightmess Api
+  version: 0.0.1 alpha
+  description: API проекта nightmess.
+    <div>
+      При переходе на страницу URL будет содержать hash-пользователя (пример: https://site.ru/user/XXXXXXXXXXXXXX, где
+      XXXXXXXXXXXXXX - hash).<br>
+      Для дальнейшей авторизации необходимо вызвать роут GET /code/{hash}, который отправит проверочный код в TG-бота
+      пользователю.<br>
+      Полученный код необходимо отправить по роуту POST /code, в ответе которого будет токен доступа и токен обновления.<br>
+      Все роуты, требующие авторизации отправлять с токеном доступа в заголовке в поле '<b>x-auth-token</b>'.
+    </div>
+
+servers:
+  - url: https://nightmess.world/api/
+    description: Тестовое Api
+
+components:
+
+  securitySchemes:
+    x-auth-token:
+      type: apiKey
+      description: Токен доступа полеченный из метода POST /code.
+      name: x-auth-token
+      in: header
+
+  responses:
+    success:
+      description: Выполнено успешно
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/success'
+    error:
+      description: Ошибка при выполнении запроса
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    unauthorized:
+      description: Пользователь не авторизаован
+      content:
+        application/json:
+          schema:
+            properties:
+              message:
+                type: string
+                example: "Требуется авторизация"
+            oneOf:
+              - $ref: '#/components/schemas/error'
+
+    code:
+      description: Ответ при отправки кода авториазции
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/success'
+            properties:
+              tokens:
+                type: object
+                properties:
+                  access:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJoYXNoIjoiNWVlNjE1OTJiMjJmMzI4NjA3NDhiZDI4NTBmZTkyNDgiLCJpYXQiOjE3MTI1NzY5NDAsImV4cCI6MTcxMjY2MzM0MH0.5Xe3sLS3VbY63hjtQheLoB-gv_yDRX5HdfJro45Cvsc
+                    description: Токен доступа
+                  refresh:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJoYXNoIjoiNWVlNjE1OTJiMjJmMzI4NjA3NDhiZDI4NTBmZTkyNDgiLCJpYXQiOjE3MTI1NzY5NDAsImV4cCI6MTcxMjY2MzM0MH0.5Xe3sLS3VbY63hjtQheLoB-gv_yDRX5HdfJro45Cvsc
+                    description: Токен для обновления токена доступа
+
+  schemas:
+    success:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "OK"
+    error:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "ERROR"
+        message:
+          type: string
+          example: "Текст описание ошибки"
+
+    code:
+      type: object
+      required: [ code ]
+      properties:
+        code:
+          type: string
+          description: Код авторизации, полученных в TG-боте
+          example: 1234
+
+    refresh:
+      type: object
+      required: [ refresh_token ]
+      properties:
+        refresh_token:
+          type: string
+          description: Токен для обновления токена доступа
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJoYXNoIjoiNWVlNjE1OTJiMjJmMzI4NjA3NDhiZDI4NTBmZTkyNDgiLCJpYXQiOjE3MTI1NzY5NDAsImV4cCI6MTcxMjY2MzM0MH0.5Xe3sLS3VbY63hjtQheLoB-gv_yDRX5HdfJro45Cvsc"
+
+    login:
+      type: object
+      required: [ login ]
+      properties:
+        login:
+          type: string
+          description: Логин (телефон или email)
+          example: "user"
+        password:
+          type: string
+          description: Пароль пользователя
+          example: "111"
+
+    register:
+      type: object
+      required: [ email, password ]
+      properties:
+        user_name:
+          type: string
+          description: Nick пользователя
+          example: "user"
+        full_name:
+          type: string
+          description: Полное имя пользователя
+          example: "Василий Пупкин"
+        phone:
+          type: string
+          description: Телефон пользователя
+          example: "78001234567"
+        email:
+          type: string
+          description: Email пользователя
+          example: "pupkin@ya.ru"
+        password:
+          type: string
+          description: Пароль пользователя
+          example: "1111"
+
+    user:
+      type: object
+      required: [ products ]
+      properties:
+        address_id:
+          type: number
+          description: ID адреса доставки по умолчанию
+          example: 1
+        phone:
+          type: string
+          description: Телефон
+          example: 79001234567
+        email:
+          type: string
+          description: E-mail
+          example: test@ya.ru
+
+    address:
+      type: object
+      required: [ address, city, region, country, zip ]
+      properties:
+        address:
+          type: string
+          description: Адрес
+          example: "ул. Пушкина, 8"
+        city:
+          type: string
+          description: Город
+          example: "Москва"
+        region:
+          type: string
+          description: Область
+          example: "Московская обл."
+        country:
+          type: string
+          description: Страна
+          example: "Россия"
+        zip:
+          type: string
+          description: Почтовый индекс
+          example: "11111"
+
+    order:
+      type: object
+      required: [ products, counts ]
+      properties:
+        address_id:
+          type: number
+          description: ID адреса доставки
+          example: 1
+        products:
+          type: array
+          description: Список ID продуктов заказа
+          items:
+            type: number
+        counts:
+          type: array
+          description: Список кол-во продуктов
+          items:
+            type: number
+
+paths:
+  /:
+    get:
+      summary: Проверка API
+      x-swagger-router-controller: apiController
+      operationId: login
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /code/{hash}:
+    get:
+      tags:
+        - AUTH
+      summary: Запрос на получение кода авторизации в TG-бот пользователю
+      x-swagger-router-controller: ApiController
+      operationId: getCode
+      parameters:
+        - in: path
+          name: hash
+          schema:
+            type: string
+          required: true
+          description: Hash пользователя
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /check/{code}:
+    get:
+      tags:
+        - AUTH
+      summary: Отправка кода авторизации полученного выше
+      x-swagger-router-controller: ApiController
+      operationId: checkCode
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: string
+          required: true
+          description: код подтверждения
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /refresh:
+    post:
+      tags:
+        - AUTH
+      summary: Обновление токена доступа
+      x-swagger-router-controller: ApiController
+      operationId: refresh
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/refresh'
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/code'
+
+
+  /login:
+    post:
+      tags:
+        - AUTH
+      summary: Авторизация
+      x-swagger-router-controller: ApiController
+      operationId: login
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/login'
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/code'
+
+  /register:
+    post:
+      tags:
+        - AUTH
+      summary: Ригистрация пользователей из web
+      x-swagger-router-controller: ApiController
+      operationId: register
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/register'
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/code'
+
+  /user:
+    get:
+      tags:
+        - USER
+      summary: Данные учетной записи пользователя
+      x-swagger-router-controller: apiController
+      operationId: user
+      security:
+        - x-auth-token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/error'
+
+    patch:
+      tags:
+        - USER
+      summary: Изменение данных пользователя
+      x-swagger-router-controller: apiController
+      operationId: setUser
+      security:
+        - x-auth-token: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/user'
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /user/addresses:
+    get:
+      tags:
+        - USER
+      summary: Получение адресов пользователя
+      x-swagger-router-controller: apiController
+      operationId: getAddresses
+      security:
+        - x-auth-token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /user/address:
+    post:
+      tags:
+        - USER
+      summary: Добавление адреса пользователю
+      x-swagger-router-controller: apiController
+      operationId: addAddress
+      security:
+        - x-auth-token: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/address'
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+    patch:
+      tags:
+        - USER
+      summary: Изменение адреса пользователя
+      x-swagger-router-controller: apiController
+      operationId: setAddress
+      security:
+        - x-auth-token: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              required: [ address_id ]
+              allOf:
+                - type: object
+                  properties:
+                    address_id:
+                      type: number
+                      description: ID адреса доставки
+                      example: 1
+                - $ref: '#/components/schemas/address'
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /user/address/{address_id}:
+    delete:
+      tags:
+        - USER
+      summary: Удаление адреса у пользователя
+      x-swagger-router-controller: ApiController
+      operationId: deleteAddress
+      parameters:
+        - in: path
+          name: address_id
+          schema:
+            type: number
+          required: true
+          description: ID адреса
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /user/card:
+    get:
+      tags:
+        - USER
+      summary: Получение новой случайной карточки
+      x-swagger-router-controller: apiController
+      operationId: getCard
+      security:
+        - x-auth-token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /user/cards:
+    get:
+      tags:
+        - USER
+      summary: Получение карточек пользователя
+      x-swagger-router-controller: apiController
+      operationId: getCards
+      security:
+        - x-auth-token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /user/order:
+    post:
+      tags:
+        - USER
+      summary: Создание нового заказа
+      x-swagger-router-controller: apiController
+      operationId: createOrder
+      security:
+        - x-auth-token: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/order'
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /user/orders:
+    get:
+      tags:
+        - USER
+      summary: Получение заказов пользователя
+      x-swagger-router-controller: apiController
+      operationId: getOrders
+      security:
+        - x-auth-token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /user/products:
+    get:
+      tags:
+        - USER
+      summary: Получение продуктов
+      x-swagger-router-controller: apiController
+      operationId: getProducts
+      security:
+        - x-auth-token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
