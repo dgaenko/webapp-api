@@ -53,10 +53,6 @@ class ApiController extends BaseController {
     }
 
 
-    /**
-     * https://github.com/feathers-studio/telegraf-docs/tree/673ad547190568183ce699e42dd3920c4804cbec/examples/mini-apps#feature-table
-     * проверка входящих данных от юзера при открытии вебапп
-     */
     async validateInit(ctx) {
         self.d(".validateInit", ctx.request.body);
         let response = self.defaultErrorResponse(401);

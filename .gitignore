@@ -1,7 +1,9 @@
 .idea
 _DOCs_
 node_modules
+front/*
 tmp/*
 logs/*
 config/*
 package-lock.json
+*.cmd
