@@ -13,14 +13,15 @@ const delete_address = require("../middleware/validation/delete_address.js");
 const order          = require("../middleware/validation/order.js");
 
 const apiController  = require('../controllers/apiController.js');
-const userController = require('../controllers/userController.js');
+const testController = require('../controllers/testController.js');
 
 const router = new Router({
     //prefix: '/api'
 });
 
 router.get('/', apiController.index);
-router.get('/test', apiController.test);
+
+router.get('/test', testController.test);
 
 router.post('/validate-init', koaBody(), apiController.validateInit);
 router.get('/user', authenticated, apiController.user);

@@ -31,28 +31,6 @@ class ApiController extends BaseController {
         self.sendResponse(ctx, response);
     }
 
-    async test(ctx) {
-        self.d(".test", ctx.session);
-        let response = self.defaultErrorResponse();
-
-        try {
-            const data = ctx.request.body;
-
-            for (let i = 0; i < 100; i++) {
-                const res = await models.Card.getRandom();
-                console.log(i, res?.title);
-            }
-
-            response = self.defaultSuccessResponse();
-        } catch (ex) {
-            console.log("ERROR", ex);
-            response.message = ex.errors[0].message;
-        }
-
-        self.sendResponse(ctx, response);
-    }
-
-
     async validateInit(ctx) {
         self.d(".validateInit", ctx.request.body);
         let response = self.defaultErrorResponse(401);
@@ -83,7 +61,6 @@ class ApiController extends BaseController {
         console.log(response);
         self.sendResponse(ctx, response);
     }
-
 
     async getCode(ctx) {
         self.d(".getCode", ctx.params);
@@ -207,7 +184,7 @@ class ApiController extends BaseController {
                     full_name: data.full_name,
                     phone: data.phone,
                     email: data.email,
-                    password: data.password,
+                    password: models.User.createPasswordHash(data.password),
                     hash: md5(new Date()),
                     ip: ctx.request.header['x-real-ip'] ? ctx.request.header['x-real-ip'] : ctx.request.ip,
                     last_login_dt: new Date()
